@@ -11,5 +11,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db' # part to our databa
 db = SQLAlchemy(app) # sqlalchemy instance
 bcrypt = Bcrypt(app) # password hashing
 login_manager = LoginManager(app) # Flask-Login 
+login_manager.login_view = 'login'
+login_manager.login_message_category = 'info'
+
 
 from src import routes
