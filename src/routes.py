@@ -8,32 +8,13 @@ from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, current_user, logout_user, login_required
 
 from src.models import User, Post
-from src.forms import RegistrationForm, LoginForm, UpdateAccountForm
+from src.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm
 
-posts = [
-    {
-        'author': 'Ifeanyi',
-        'title': 'Blog post 1',
-        'content': 'First Post content',
-        'date_created': 'April 20, 2018'
-    },
-    {
-        'author': 'Ifeanyi A',
-        'title': 'Blog post 2',
-        'content': 'Second Post content',
-        'date_created': 'April 30, 2018'
-    },
-    {
-        'author': 'Ifeanyi Achufusi',
-        'title': 'Blog post 3',
-        'content': 'Third Post content',
-        'date_created': 'April 22, 2018'
-    }
-]
 
 
 @app.route('/')
 def home():
+    posts = Post.query.all()
     return render_template('home.html', posts=posts)
 
 
@@ -118,4 +99,25 @@ def account():
         form.username.data = current_user.username
         form.email.data = current_user.email
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
-    return render_template('account.html', title='Account', image_file=image_file, form=form )
+    return render_template('account.html', title='Account', image_file=image_file, form=form)
+
+
+# creating a create post route
+@app.route('/post/new', methods=['GET', 'POST'])
+@login_required
+def new_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(title=form.title.data, content=form.content.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash('Your post has been created', 'success')
+        return redirect(url_for('home'))
+    return render_template('create_post.html', title='New Post', form=form)
+
+
+# creating a detail view
+@app.route('/post/<int:post_id>')
+def post(post_id):
+    post = Post.query.get_or_404(post_id)
+    return render_template('post.html', title=post.title, post=post)
