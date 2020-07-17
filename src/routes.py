@@ -123,10 +123,10 @@ def post(post_id):
     return render_template('post.html', title=post.title, post=post)
 
 
-# creating a detail view
+# creating a update view
 @app.route('/post/<int:post_id>/update', methods=['GET', 'POST'])
 @login_required
-def updatepost(post_id):
+def update_post(post_id):
     post = Post.query.get_or_404(post_id)
     if post.author != current_user:
         abort(403)
@@ -141,3 +141,16 @@ def updatepost(post_id):
         form.title.data = post.title
         form.content.data = post.content
     return render_template('create_post.html', title='Update Post', form=form, legend='Update Post')
+
+
+# creating a delete view
+@app.route('/post/<int:post_id>/delete', methods=['POST'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    db.session.delete(post)
+    db.session.commit()
+    flash('Delete successfull', 'success')
+    return redirect(url_for('home'))
